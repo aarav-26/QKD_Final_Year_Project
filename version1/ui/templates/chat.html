@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ current_user }} Chat</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { height: 100vh; display: flex; margin: 0; }
+        #users { width: 25%; border-right: 1px solid #ddd; padding: 10px; overflow-y: auto; }
+        #chat { width: 75%; padding: 10px; display: flex; flex-direction: column; }
+        #messages { flex: 1; overflow-y: auto; border-bottom: 1px solid #ddd; padding-bottom: 10px; }
+        #send { margin-top: 10px; display: flex; }
+        #send input { flex: 1; margin-right: 5px; }
+        .message { margin: 5px 0; }
+        .user-item { cursor: pointer; padding: 5px; border-radius: 5px; }
+        .user-item:hover { background-color: #f0f0f0; }
+        .active-user { background-color: #d0f0d0; }
+    </style>
+</head>
+<body>
+    <div id="users">
+        <h5>Users</h5>
+        <ul class="list-unstyled">
+            {% for user in users %}
+            <li class="user-item" onclick="selectUser('{{ user }}')" id="user-{{ user }}">{{ user }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    <div id="chat">
+        <div id="messages"></div>
+        <div id="send">
+            <input type="text" id="msg_input" placeholder="Type message..." />
+            <button class="btn btn-primary" onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script>
+        var socket = io();
+        var selectedUser = '{{ users[0] if users else "" }}';
+        document.getElementById("user-" + selectedUser)?.classList.add('active-user');
+
+        function selectUser(user) {
+            document.getElementById("user-" + selectedUser).classList.remove('active-user');
+            selectedUser = user;
+            document.getElementById("user-" + selectedUser).classList.add('active-user');
+            loadMessages();
+        }
+
+        function sendMessage() {
+            var msg = document.getElementById('msg_input').value;
+            if (!msg) return;
+            socket.emit('send_message', { to: selectedUser, msg: msg });
+            document.getElementById('msg_input').value = '';
+        }
+
+        socket.on('receive_message', function(data) {
+            loadMessages();
+        });
+
+        function loadMessages() {
+            var messagesDiv = document.getElementById('messages');
+            messagesDiv.innerHTML = '';
+            var allMessages = {{ messages | tojson }};
+            if (selectedUser in allMessages) {
+                allMessages[selectedUser].forEach(function(m) {
+                    var div = document.createElement('div');
+                    div.className = 'message';
+                    div.innerText = m;
+                    messagesDiv.appendChild(div);
+                });
+            }
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        loadMessages();
+    </script>
+</body>
+</html>

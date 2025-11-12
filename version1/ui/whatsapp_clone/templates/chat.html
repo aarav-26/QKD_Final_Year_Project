@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Talk'n'Go - {{ username }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="chat-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="user-info">
+                    <h3>{{ username }}</h3>
+                    <p class="user_port" >{{user_port}}</p>
+                </div>
+                <div class="logout-container">
+                    <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
+                </div>
+            </div>
+            
+            <div class="search-container">
+                <input type="text" id="searchUsers" placeholder="Search users...">
+                <button onclick="searchUsers()">Search</button>
+            </div>
+            
+            <div class="users-section">
+                <h4>All Users</h4>
+                <div id="usersList" class="users-list">
+                    <div class="loading">Loading users...</div>
+                </div>
+            </div>
+            
+            <div class="friends-section">
+                <h4>Online Users</h4>
+                <div id="friendsList" class="friends-list">
+                    <div class="loading">Loading...</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Chat Area -->
+        <div class="chat-area">
+            <div class="chat-header" id="chatHeader">
+                <div class="no-chat-selected" id="noChatSelected">
+                    <h3>Talk'n'Go</h3>
+                    <p>Select a user from the sidebar to start chatting</p>
+                </div>
+                <div class="active-chat-header" id="activeChatHeader" style="display: none;">
+                    <h3 id="activeChatUser">Friend Name</h3>
+                    <p id="activeChatStatus">Online</p>
+                </div>
+            </div>
+            
+            <div class="messages-container" id="messagesContainer">
+                <div class="no-chat-message" id="noChatMessage">
+                    <p>Your messages will appear here</p>
+                </div>
+                <div class="messages" id="messages" style="display: none;"></div>
+            </div>
+            
+            <div class="message-input-container" id="messageInput" style="display: none;">
+                <div class="input-group">
+                    <!-- File upload buttons -->
+                    <div class="file-buttons">
+                        <input type="file" id="imageInput" accept="image/*" style="display: none;">
+                        <button type="button" onclick="document.getElementById('imageInput').click()" class="file-btn" title="Send Image">
+                            📷
+                        </button>
+                        <input type="file" id="fileInput" style="display: none;">
+                        <button type="button" onclick="document.getElementById('fileInput').click()" class="file-btn" title="Send File">
+                            📎
+                        </button>
+                    </div>
+                    
+                    <input type="text" id="messageText" placeholder="Type a message...">
+                    <button onclick="sendMessage()">Send</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden elements for file uploads -->
+    <div id="uploadProgress" style="display: none;">
+        <div class="progress-bar">
+            <div class="progress"></div>
+        </div>
+        <span id="uploadStatus">Uploading...</span>
+    </div>
+
+    <script>
+        // Global variables
+        const currentUserPort = {{ user_port }};
+        const currentUsername = "{{ username }}";
+        let selectedUserPort = null;
+        let selectedUsername = null;
+        let messageInterval = null;
+
+        console.log("🚀 Talk'n'Go initialized for:", currentUsername);
+
+        // Load users when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("📄 DOM loaded, starting user load...");
+            loadUsers();
+            setInterval(loadUsers, 3000);
+            
+            // Auto-focus message input when user is selected
+            document.addEventListener('click', function(e) {
+                if (e.target.closest('.user-item') || e.target.closest('.friend-item')) {
+                    setTimeout(() => {
+                        document.getElementById('messageText').focus();
+                    }, 100);
+                }
+            });
+
+            // Add Enter key listener
+            document.getElementById('messageText').addEventListener('keypress', function(event) {
+                if (event.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+
+            // Image upload handler
+            document.getElementById('imageInput').addEventListener('change', function(e) {
+                handleImageUpload(e.target.files[0]);
+            });
+
+            // File upload handler
+            document.getElementById('fileInput').addEventListener('change', function(e) {
+                handleFileUpload(e.target.files[0]);
+            });
+        });
+
+        // Handle image upload
+        function handleImageUpload(file) {
+            if (!file || !file.type.startsWith('image/')) {
+                alert('Please select a valid image file');
+                return;
+            }
+
+            if (file.size > 10 * 1024 * 1024) { // 10MB limit
+                alert('Image size should be less than 10MB');
+                return;
+            }
+
+            showUploadProgress('Uploading image...');
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const base64 = e.target.result;
+                sendFileMessage(file.name, base64, 'image', file.size);
+                hideUploadProgress();
+            };
+            reader.onerror = function() {
+                alert('Error reading image file');
+                hideUploadProgress();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Handle file upload
+        function handleFileUpload(file) {
+            if (!file) {
+                alert('Please select a file');
+                return;
+            }
+
+            if (file.size > 15 * 1024 * 1024) { // 15MB limit
+                alert('File size should be less than 15MB');
+                return;
+            }
+
+            showUploadProgress('Uploading file...');
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const base64 = e.target.result.split(',')[1]; // Remove data URL prefix
+                sendFileMessage(file.name, base64, 'file', file.size);
+                hideUploadProgress();
+            };
+            reader.onerror = function() {
+                alert('Error reading file');
+                hideUploadProgress();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Send file message
+        async function sendFileMessage(fileName, fileData, fileType, fileSize) {
+            if (!selectedUserPort) {
+                alert('Please select a user first!');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/send_message', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        to_port: selectedUserPort,
+                        message: fileName,
+                        type: fileType,
+                        file_data: fileData,
+                        file_name: fileName,
+                        file_size: fileSize
+                    })
+                });
+                
+                const result = await response.json();
+                if (result.status === 'sent') {
+                    await loadMessages();
+                } else {
+                    alert('Failed to send file: ' + (result.message || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('❌ Error sending file:', error);
+                alert('Error sending file');
+            }
+        }
+
+        // Show upload progress
+        function showUploadProgress(message) {
+            const progress = document.getElementById('uploadProgress');
+            const status = document.getElementById('uploadStatus');
+            status.textContent = message;
+            progress.style.display = 'block';
+        }
+
+        // Hide upload progress
+        function hideUploadProgress() {
+            const progress = document.getElementById('uploadProgress');
+            progress.style.display = 'none';
+            
+            // Clear file inputs
+            document.getElementById('imageInput').value = '';
+            document.getElementById('fileInput').value = '';
+        }
+
+        // Format file size
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // Load all users from central server
+        async function loadUsers() {
+            try {
+                const response = await fetch('/api/users');
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const users = await response.json();
+                updateUserLists(users);
+                
+            } catch (error) {
+                console.error('❌ Error loading users:', error);
+                document.getElementById('usersList').innerHTML = '<div class="error">Error loading users</div>';
+                document.getElementById('friendsList').innerHTML = '<div class="error">Error loading users</div>';
+            }
+        }
+
+        // Update user lists in the UI
+        function updateUserLists(users) {
+            const usersList = document.getElementById('usersList');
+            const friendsList = document.getElementById('friendsList');
+            
+            // Update All Users list
+            if (Object.keys(users).length === 0) {
+                usersList.innerHTML = '<div class="no-users">No other users found</div>';
+                friendsList.innerHTML = '<div class="no-users">No online users</div>';
+                return;
+            }
+            
+            usersList.innerHTML = '';
+            Object.entries(users).forEach(([port, user]) => {
+                const userItem = document.createElement('div');
+                userItem.className = 'user-item';
+                userItem.onclick = () => selectUser(port, user.username);
+                
+                userItem.innerHTML = `
+                    <div class="user-info-small">
+                        <div class="user-name">${user.username}</div>
+                    </div>
+                    <span class="user-status ${user.online ? 'status-online' : 'status-offline'}">
+                        ${user.online ? 'Online' : 'Offline'}
+                    </span>
+                `;
+                usersList.appendChild(userItem);
+            });
+            
+            // Update Online Users list
+            friendsList.innerHTML = '';
+            const onlineUsers = Object.entries(users).filter(([port, user]) => user.online);
+            
+            if (onlineUsers.length === 0) {
+                friendsList.innerHTML = '<div class="no-users">No online users</div>';
+                return;
+            }
+            
+            onlineUsers.forEach(([port, user]) => {
+                const friendItem = document.createElement('div');
+                friendItem.className = 'friend-item';
+                friendItem.onclick = () => selectUser(port, user.username);
+                
+                friendItem.innerHTML = `
+                    <div class="user-info-small">
+                        <div class="user-name">${user.username}</div>
+                    </div>
+                    <span class="user-status status-online">Online</span>
+                `;
+                friendsList.appendChild(friendItem);
+            });
+        }
+
+        // Select user for chatting
+        async function selectUser(port, username) {
+            console.log("👤 Selecting user:", username);
+            
+            selectedUserPort = port;
+            selectedUsername = username;
+            
+            // Update UI
+            document.getElementById('noChatSelected').style.display = 'none';
+            document.getElementById('activeChatHeader').style.display = 'block';
+            document.getElementById('activeChatUser').textContent = username;
+            document.getElementById('activeChatStatus').textContent = 'Online';
+            document.getElementById('messages').style.display = 'flex';
+            document.getElementById('messageInput').style.display = 'block';
+            document.getElementById('noChatMessage').style.display = 'none';
+            
+            // Auto-focus message input (like WhatsApp)
+            setTimeout(() => {
+                document.getElementById('messageText').focus();
+            }, 100);
+            
+            // Clear previous interval
+            if (messageInterval) {
+                clearInterval(messageInterval);
+            }
+            
+            // Load messages and start polling
+            await loadMessages();
+            messageInterval = setInterval(loadMessages, 2000);
+        }
+
+        // Load messages for selected user
+        async function loadMessages() {
+            if (!selectedUserPort) return;
+            
+            try {
+                const response = await fetch(`/api/messages/${selectedUserPort}`);
+                if (!response.ok) {
+                    throw new Error('Failed to fetch messages');
+                }
+                const messages = await response.json();
+                const messagesContainer = document.getElementById('messages');
+                
+                messagesContainer.innerHTML = '';
+                
+                if (messages.length === 0) {
+                    messagesContainer.innerHTML = '<div class="no-messages">No messages yet. Start the conversation!</div>';
+                    return;
+                }
+                
+                // Sort messages by timestamp
+                messages.sort((a, b) => {
+                    const timeA = new Date(`${a.date} ${a.timestamp}`);
+                    const timeB = new Date(`${b.date} ${b.timestamp}`);
+                    return timeA - timeB;
+                });
+                
+                messages.forEach(msg => {
+                    const messageDiv = document.createElement('div');
+                    const isSent = parseInt(msg.from_port) === parseInt(currentUserPort);
+                    messageDiv.className = `message ${isSent ? 'message-sent' : 'message-received'} ${msg.type}-message`;
+                    
+                    let messageContent = '';
+                    
+                    if (msg.type === 'text') {
+                        messageContent = `
+                            <div class="message-text">${msg.message}</div>
+                            <div class="message-time">${msg.timestamp}</div>
+                        `;
+                    } else if (msg.type === 'image') {
+                        const imageUrl = `/file/image/${msg.file_path}`;
+                        messageContent = `
+                            <div class="file-message">
+                                <div class="file-info">
+                                    <span class="file-icon">🖼️</span>
+                                    <span class="file-name">Image</span>
+                                </div>
+                                <img src="${imageUrl}" alt="Shared image" class="message-image" onclick="openImage('${imageUrl}')">
+                                <div class="message-time">${msg.timestamp}</div>
+                            </div>
+                        `;
+                    } else if (msg.type === 'file') {
+                        const fileUrl = `/file/file/${msg.file_path}`;
+                        messageContent = `
+                            <div class="file-message">
+                                <div class="file-info">
+                                    <span class="file-icon">📎</span>
+                                    <div class="file-details">
+                                        <div class="file-name">${msg.message}</div>
+                                        <div class="file-size">${formatFileSize(msg.file_size)}</div>
+                                    </div>
+                                </div>
+                                <a href="${fileUrl}" download="${msg.message}" class="download-btn">Download</a>
+                                <div class="message-time">${msg.timestamp}</div>
+                            </div>
+                        `;
+                    }
+                    
+                    messageDiv.innerHTML = messageContent;
+                    messagesContainer.appendChild(messageDiv);
+                });
+                
+                // Scroll to bottom
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                
+            } catch (error) {
+                console.error('❌ Error loading messages:', error);
+            }
+        }
+
+        // Open image in full screen
+        function openImage(imageUrl) {
+            window.open(imageUrl, '_blank');
+        }
+
+        // Send text message
+        async function sendMessage() {
+            if (!selectedUserPort) {
+                alert('Please select a user first!');
+                return;
+            }
+            
+            const messageText = document.getElementById('messageText');
+            const text = messageText.value.trim();
+            
+            if (!text) return;
+            
+            try {
+                const response = await fetch('/api/send_message', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        to_port: selectedUserPort,
+                        message: text,
+                        type: 'text'
+                    })
+                });
+                
+                const result = await response.json();
+                if (result.status === 'sent') {
+                    messageText.value = '';
+                    await loadMessages();
+                } else {
+                    alert('Failed to send message: ' + (result.message || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('❌ Error sending message:', error);
+                alert('Error sending message');
+            }
+        }
+
+        // Search users
+        function searchUsers() {
+            const searchTerm = document.getElementById('searchUsers').value.toLowerCase();
+            const userItems = document.querySelectorAll('.user-item');
+            const friendItems = document.querySelectorAll('.friend-item');
+            
+            userItems.forEach(item => {
+                const userName = item.querySelector('.user-name').textContent.toLowerCase();
+                if (userName.includes(searchTerm)) {
+                    item.style.display = 'flex';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+            
+            friendItems.forEach(item => {
+                const userName = item.querySelector('.user-name').textContent.toLowerCase();
+                if (userName.includes(searchTerm)) {
+                    item.style.display = 'flex';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+        // Send heartbeat
+        async function sendHeartbeat() {
+            try {
+                await fetch('/api/heartbeat');
+            } catch (error) {
+                console.log('Heartbeat failed');
+            }
+        }
+
+        // Auto heartbeat every 10 seconds
+        setInterval(sendHeartbeat, 10000);
+    </script>
+</body>
+</html>

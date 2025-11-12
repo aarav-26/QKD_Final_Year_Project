@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Clone - Login</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-box">
+            <div class="whatsapp-header">
+                <h1>WhatsApp Clone</h1>
+                <p>Enter your details to start chatting</p>
+            </div>
+            
+            {% if error %}
+            <div class="error-message">
+                {{ error }}
+            </div>
+            {% endif %}
+            
+            <form method="POST" class="login-form">
+                <div class="form-group">
+                    <label for="username">Username:</label>
+                    <input type="text" id="username" name="username" 
+                           placeholder="Enter your name" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="port">Port Number:</label>
+                    <input type="number" id="port" name="port" 
+                           placeholder="Enter your port" value="{{ request.args.get('port', '') }}" required>
+                    <small>This server is running on port: {{ request.environ.get('SERVER_PORT') }}</small>
+                </div>
+                
+                <button type="submit" class="btn-login">Start Chatting</button>
+            </form>
+            
+            <div class="login-info">
+                <p><strong>Note:</strong> Each user runs on a different port</p>
+                <p>Example: User1: 2435, User2: 1234, User3: 7654</p>
+                <p><strong>Current URL:</strong> {{ request.url }}</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

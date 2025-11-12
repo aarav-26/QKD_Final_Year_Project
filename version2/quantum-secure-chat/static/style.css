@@ -1,0 +1,941 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    height: 100vh;
+}
+
+.container {
+    height: 100vh;
+}
+
+/* Login Styles */
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    padding: 20px;
+}
+
+.login-box {
+    background: white;
+    padding: 40px;
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    width: 100%;
+    max-width: 400px;
+}
+
+.whatsapp-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.whatsapp-header h1 {
+    color: #25D366;
+    font-size: 2.5em;
+    margin-bottom: 10px;
+}
+
+.whatsapp-header p {
+    color: #666;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    color: #333;
+    font-weight: 500;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+    font-size: 16px;
+    transition: border-color 0.3s;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: #25D366;
+}
+
+.btn-login {
+    width: 100%;
+    padding: 12px;
+    background: #25D366;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.btn-login:hover {
+    background: #128C7E;
+}
+
+.login-info {
+    margin-top: 20px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 5px;
+    font-size: 14px;
+    color: #666;
+}
+
+/* Chat Container */
+.chat-container {
+    display: flex;
+    height: 100vh;
+    background: white;
+}
+
+/* Sidebar */
+.sidebar {
+    width: 350px;
+    background: #2A2F32;
+    color: white;
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-header {
+    padding: 20px;
+    background: #2A2F32;
+    border-bottom: 1px solid #333;
+    display: flex;
+    justify-content: between;
+    align-items: center;
+}
+
+.user-info h3 {
+    color: white;
+    margin-bottom: 5px;
+}
+
+.user-info p {
+    color: #aaa;
+    font-size: 12px;
+}
+
+.logout-btn {
+    background: #dc3545;
+    color: white;
+    padding: 8px 15px;
+    text-decoration: none;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+.logout-btn:hover {
+    background: #c82333;
+}
+
+.search-container {
+    padding: 15px;
+    border-bottom: 1px solid #333;
+}
+
+.search-container input {
+    width: 70%;
+    padding: 8px;
+    border: none;
+    border-radius: 5px;
+    margin-right: 5px;
+}
+
+.search-container button {
+    padding: 8px 15px;
+    background: #25D366;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.users-section, .friends-section {
+    padding: 15px;
+    flex: 1;
+    overflow-y: auto;
+}
+
+.users-section h4, .friends-section h4 {
+    margin-bottom: 15px;
+    color: #25D366;
+}
+
+.users-list, .friends-list {
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.user-item, .friend-item {
+    padding: 12px;
+    margin-bottom: 8px;
+    background: #333;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.user-item:hover, .friend-item:hover {
+    background: #444;
+}
+
+.user-info-small {
+    flex: 1;
+}
+
+.user-name {
+    font-weight: 500;
+    margin-bottom: 3px;
+}
+
+.user-port {
+    font-size: 12px;
+    color: #aaa;
+}
+
+.user-status {
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 10px;
+}
+
+.status-online {
+    background: #25D366;
+    color: white;
+}
+
+.status-offline {
+    background: #666;
+    color: #ccc;
+}
+
+.add-friend-btn {
+    background: #25D366;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+/* Chat Area */
+.chat-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: #0D1418;
+}
+
+.chat-header {
+    background: #2A2F32;
+    padding: 20px;
+    color: white;
+}
+
+.no-chat-selected {
+    text-align: center;
+}
+
+.no-chat-selected h3 {
+    color: #25D366;
+    margin-bottom: 10px;
+}
+
+.no-chat-selected p {
+    color: #aaa;
+}
+
+.active-chat-header h3 {
+    margin-bottom: 5px;
+}
+
+.active-chat-header p {
+    color: #25D366;
+    font-size: 14px;
+}
+
+.messages-container {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    background: #0D1418;
+}
+
+.no-chat-message {
+    text-align: center;
+    color: #666;
+    margin-top: 50px;
+}
+
+.messages {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.message {
+    max-width: 70%;
+    padding: 12px 16px;
+    border-radius: 7.5px;
+    margin-bottom: 10px;
+    position: relative;
+}
+
+.message-sent {
+    align-self: flex-end;
+    background: #056162;
+    color: white;
+    border-top-right-radius: 0;
+}
+
+.message-received {
+    align-self: flex-start;
+    background: #2A2F32;
+    color: white;
+    border-top-left-radius: 0;
+}
+
+.message-sender {
+    font-size: 12px;
+    font-weight: bold;
+    margin-bottom: 5px;
+    color: #25D366;
+}
+
+.message-text {
+    margin-bottom: 5px;
+}
+
+.message-time {
+    font-size: 11px;
+    text-align: right;
+    color: #aaa;
+}
+
+.message-input-container {
+    padding: 20px;
+    background: #1E2428;
+}
+
+.input-group {
+    display: flex;
+    gap: 10px;
+}
+
+.input-group input {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 25px;
+    background: #2A2F32;
+    color: white;
+    font-size: 14px;
+}
+
+.input-group input:focus {
+    outline: none;
+}
+
+.input-group button {
+    padding: 12px 25px;
+    background: #25D366;
+    color: white;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.input-group button:hover {
+    background: #128C7E;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: #2A2F32;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #555;
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #777;
+}
+
+/* File upload buttons */
+.file-buttons {
+    display: flex;
+    gap: 5px;
+}
+
+.file-btn {
+    background: #25D366;
+    color: white;
+    border: none;
+    padding: 10px 12px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background 0.3s;
+}
+
+.file-btn:hover {
+    background: #128C7E;
+}
+
+/* File message styles */
+.file-message {
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    margin: 5px 0;
+}
+
+.file-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.file-icon {
+    font-size: 20px;
+}
+
+.file-details {
+    flex: 1;
+}
+
+.file-name {
+    font-weight: 500;
+    color: white;
+}
+
+.file-size {
+    font-size: 12px;
+    color: #ccc;
+}
+
+/* Image message styles */
+.message-image {
+    max-width: 300px;
+    max-height: 300px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.3s;
+}
+
+.message-image:hover {
+    transform: scale(1.05);
+}
+
+/* Download button */
+.download-btn {
+    display: inline-block;
+    background: #25D366;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 12px;
+    margin-top: 5px;
+    transition: background 0.3s;
+}
+
+.download-btn:hover {
+    background: #128C7E;
+}
+
+/* Progress bar */
+#uploadProgress {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 20px;
+    border-radius: 8px;
+    z-index: 1000;
+}
+
+.progress-bar {
+    width: 200px;
+    height: 4px;
+    background: #333;
+    border-radius: 2px;
+    margin: 10px 0;
+    overflow: hidden;
+}
+
+.progress {
+    height: 100%;
+    background: #25D366;
+    width: 0%;
+    transition: width 0.3s;
+}
+
+/* Different message types */
+.image-message, .file-message {
+    max-width: 85%;
+}
+
+.image-message .message-text, .file-message .message-text {
+    background: none;
+    padding: 0;
+}
+/* Multi-user specific styles */
+.header-buttons {
+    display: flex;
+    gap: 5px;
+}
+
+.status-btn {
+    background: #667eea;
+    color: white;
+    padding: 8px 12px;
+    text-decoration: none;
+    border-radius: 5px;
+    font-size: 12px;
+}
+
+.status-btn:hover {
+    background: #5a6fd8;
+}
+
+.user-info small {
+    color: #25D366;
+    font-size: 10px;
+}
+
+/* Logout button with small margin */
+.logout-container {
+    margin-left: 15px;
+}
+
+.logout-btn {
+    background: #dc3545;
+    color: white;
+    padding: 8px 15px;
+    text-decoration: none;
+    border-radius: 5px;
+    font-size: 14px;
+    transition: background 0.3s;
+}
+
+.logout-btn:hover {
+    background: #c82333;
+}
+
+/* Unread message badge */
+.unread-badge {
+    background: #25D366;
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: bold;
+    margin-left: auto;
+}
+
+/* Sidebar header layout */
+.sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+/* Logout button with small margin */
+.logout-container {
+    margin-left: 15px;
+}
+
+.logout-btn {
+    background: #dc3545;
+    color: white;
+    padding: 8px 15px;
+    text-decoration: none;
+    border-radius: 5px;
+    font-size: 14px;
+    transition: background 0.3s;
+}
+
+.logout-btn:hover {
+    background: #c82333;
+}
+
+/* Unread message badge (WhatsApp-like) */
+.unread-badge {
+    background: #25D366;
+    color: white;
+    border-radius: 50%;
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+/* User right info container */
+.user-right-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+}
+
+/* Sidebar header layout */
+.sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+
+/* App header styling */
+.app-header h1 {
+    color: #25D366;
+    font-size: 2.5em;
+    margin-bottom: 10px;
+}
+
+/* Unread message badge (WhatsApp-like red circle) */
+.unread-badge {
+    background: #25D366;
+    color: white;
+    border-radius: 50%;
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+    margin-left: auto;
+}
+
+/* User info improvements */
+.user-info-small .last-seen {
+    font-size: 12px;
+    color: #aaa;
+    margin-top: 2px;
+}
+
+.user-right-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+}
+
+/* Message status ticks */
+.message-time {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    color: #aaa;
+    margin-top: 4px;
+}
+
+.message-status {
+    font-size: 14px;
+    color: #aaa;
+}
+
+.message-status.delivered {
+    color: #aaa;
+}
+
+.message-status.seen {
+    color: #34B7F1;
+}
+
+.blue-tick {
+    color: #34B7F1;
+}
+
+/* Sent messages status alignment */
+.message-sent .message-time {
+    justify-content: flex-end;
+}
+
+/* File upload buttons */
+.file-buttons {
+    display: flex;
+    gap: 5px;
+}
+
+.file-btn {
+    background: #25D366;
+    color: white;
+    border: none;
+    padding: 10px 12px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background 0.3s;
+}
+
+.file-btn:hover {
+    background: #128C7E;
+}
+
+/* File message styles */
+.file-message {
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    margin: 5px 0;
+}
+
+.file-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.file-icon {
+    font-size: 20px;
+}
+
+.file-details {
+    flex: 1;
+}
+
+.file-name {
+    font-weight: 500;
+    color: white;
+}
+
+.file-size {
+    font-size: 12px;
+    color: #ccc;
+}
+
+/* Image message styles */
+.message-image {
+    max-width: 300px;
+    max-height: 300px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.3s;
+}
+
+.message-image:hover {
+    transform: scale(1.05);
+}
+
+/* Download button */
+.download-btn {
+    display: inline-block;
+    background: #25D366;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 12px;
+    margin-top: 5px;
+    transition: background 0.3s;
+}
+
+.download-btn:hover {
+    background: #128C7E;
+}
+
+/* Progress bar */
+#uploadProgress {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 20px;
+    border-radius: 8px;
+    z-index: 1000;
+}
+
+.progress-bar {
+    width: 200px;
+    height: 4px;
+    background: #333;
+    border-radius: 2px;
+    margin: 10px 0;
+    overflow: hidden;
+}
+
+.progress {
+    height: 100%;
+    background: #25D366;
+    width: 0%;
+    transition: width 0.3s;
+}
+
+/* Notification banner */
+.notification-banner {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #25D366;
+    color: white;
+    padding: 12px 16px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    animation: slideIn 0.3s ease-out;
+}
+
+.notification-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 0;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.user-port {
+    font-size: 12px;
+    color: #666;
+    margin: 0;
+    font-weight: normal;
+}
+
+/* Quantum Security Styles */
+.quantum-btn {
+    background: #667eea;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: background 0.3s;
+}
+
+.quantum-btn:hover {
+    background: #5a6fd8;
+}
+
+.quantum-status {
+    color: #25D366;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.quantum-controls {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+/* Notification banner for quantum messages */
+.notification-banner {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #25D366;
+    color: white;
+    padding: 12px 16px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    animation: slideIn 0.3s ease-out;
+}
+
+.notification-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 0;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Quantum indicator in user lists */
+.user-name .quantum-indicator {
+    color: #25D366;
+    font-size: 12px;
+    margin-left: 5px;
+}
+
+/* Encryption status in message input */
+#encryptionStatus {
+    color: #25D366;
+    font-size: 12px;
+    margin-top: 5px;
+    display: none;
+}

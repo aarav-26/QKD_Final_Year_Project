@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Key Management - Quantum Secure</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f8f9fa;
+            color: #2c3e50;
+        }
+        
+        .container {
+            max-width: 95%;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+        
+        .header .subtitle {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .admin-info {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .admin-details {
+            font-size: 0.9em;
+            color: #7f8c8d;
+        }
+        
+        .admin-details strong {
+            color: #2c3e50;
+        }
+        
+        .logout-btn {
+            background: #e74c3c;
+            color: white;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        
+        .logout-btn:hover {
+            background: #c0392b;
+        }
+        
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            text-align: center;
+            border-left: 4px solid #3498db;
+        }
+        
+        .stat-card.quantum {
+            border-left-color: #9b59b6;
+        }
+        
+        .stat-card.encrypted {
+            border-left-color: #27ae60;
+        }
+        
+        .stat-card.normal {
+            border-left-color: #e74c3c;
+        }
+        
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+        
+        .controls {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .filter-select, .refresh-btn {
+            padding: 10px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .filter-select:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+        
+        .refresh-btn {
+            background: #3498db;
+            color: white;
+            border-color: #3498db;
+        }
+        
+        .refresh-btn:hover {
+            background: #2980b9;
+        }
+        
+        .search-input {
+            padding: 8px 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            width: 200px;
+        }
+        
+        .auto-refresh-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+        
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .slider {
+            background-color: #2196F3;
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+        
+        .messages-container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .section-header {
+            background: #34495e;
+            color: white;
+            padding: 15px 20px;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .table-container {
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th {
+            background: #ecf0f1;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid #bdc3c7;
+            position: sticky;
+            top: 0;
+        }
+        
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #ecf0f1;
+            vertical-align: top;
+        }
+        
+        tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .quantum-badge {
+            background: #9b59b6;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+        
+        .normal-badge {
+            background: #e74c3c;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+        
+        .key-content {
+            font-family: monospace;
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 8px;
+            border-radius: 5px;
+            word-break: break-all;
+            white-space: pre-wrap;
+            font-size: 0.8em;
+            max-width: 300px;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .key-preview {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .key-full {
+            display: none;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        
+        .key-expanded .key-preview {
+            display: none;
+        }
+        
+        .key-expanded .key-full {
+            display: block;
+        }
+        
+        .expand-icon {
+            color: #3498db;
+            margin-left: 5px;
+            font-weight: bold;
+        }
+        
+        .action-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.85em;
+            margin-right: 5px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #c82333;
+        }
+        
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+        
+        .btn-warning:hover {
+            background: #e0a800;
+        }
+        
+        .last-updated {
+            text-align: center;
+            color: #7f8c8d;
+            margin-top: 20px;
+            font-size: 0.9em;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #7f8c8d;
+        }
+        
+        .new-session {
+            animation: highlight 2s ease-out;
+        }
+        
+        @keyframes highlight {
+            0% { background-color: #e8f5e8; }
+            100% { background-color: transparent; }
+        }
+        
+        .security-warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔑 Admin Key Management</h1>
+            <div class="subtitle">Complete Quantum Session Monitoring</div>
+        </div>
+        
+        <div class="admin-info">
+            <div class="admin-details">
+                👑 Logged in as: <strong>{{ admin_username }}</strong> 
+                | Session started: <strong>{{ login_time[:19] }}</strong>
+                | Access Level: <strong>Administrator</strong>
+            </div>
+            <a href="/admin/logout" class="logout-btn">🚪 Logout</a>
+        </div>
+        
+        <div class="security-warning">
+            ⚠️ <strong>SECURITY NOTICE:</strong> This panel displays sensitive quantum key information. 
+            Access is restricted to authorized administrators only.
+        </div>
+        
+        <div class="stats-bar" id="statsBar">
+            <!-- Stats will be loaded dynamically -->
+        </div>
+        
+        <div class="controls">
+            <select class="filter-select" id="statusFilter">
+                <option value="all">All Sessions</option>
+                <option value="active">Active Only</option>
+                <option value="inactive">Inactive Only</option>
+            </select>
+            
+            <input type="text" class="search-input" id="sessionFilter" placeholder="Filter by Session ID">
+            <input type="text" class="search-input" id="userFilter" placeholder="Filter by User Port">
+            
+            <div class="auto-refresh-toggle">
+                <label>Auto Refresh:</label>
+                <label class="switch">
+                    <input type="checkbox" id="autoRefresh" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+            
+            <button class="refresh-btn" onclick="loadData()">🔄 Refresh</button>
+        </div>
+        
+        <!-- QUANTUM SESSIONS CONTAINER -->
+        <div class="messages-container">
+            <div class="section-header">
+                <span>🔐 Quantum Sessions 
+                    <span id="totalCount">0</span> total sessions
+                </span>
+                <span id="filteredCount">Showing 0 sessions</span>
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Session ID</th>
+                            <th>Users</th>
+                            <th>Status</th>
+                            <th>Quantum Key</th>
+                            <th>Established</th>
+                            <th>Last Used</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="sessionsTable">
+                        <tr>
+                            <td colspan="7" class="empty-state">Loading quantum sessions...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="last-updated" id="lastUpdated">
+            Last updated: <span id="updateTime">Never</span>
+        </div>
+    </div>
+
+    <script>
+        let autoRefreshEnabled = true;
+        let lastSessionCount = 0;
+        
+        function formatKeyContent(keyData, isExpanded = false) {
+            if (!keyData || keyData === "🔒 RESTRICTED - Admin access required") {
+                return '<span style="color: #7f8c8d;">No key data</span>';
+            }
+            
+            const shortKey = keyData.length > 50 ? keyData.substring(0, 50) + '...' : keyData;
+            const fullKey = keyData;
+            
+            return `
+                <div class="key-content ${isExpanded ? 'key-expanded' : ''}" onclick="toggleKeyExpand(this)">
+                    <div class="key-preview">${shortKey}</div>
+                    <div class="key-full">${fullKey}</div>
+                    <span class="expand-icon">${isExpanded ? '▲' : '▼'}</span>
+                </div>
+            `;
+        }
+        
+        function toggleKeyExpand(element) {
+            element.classList.toggle('key-expanded');
+            const icon = element.querySelector('.expand-icon');
+            icon.textContent = element.classList.contains('key-expanded') ? '▲' : '▼';
+        }
+        
+        function formatStatusBadge(session) {
+            if (session.key_established) {
+                return '<span class="quantum-badge">ACTIVE 🔐</span>';
+            } else {
+                return '<span class="normal-badge">INACTIVE</span>';
+            }
+        }
+        
+        async function loadData() {
+            await loadStats();
+            await loadSessions();
+            updateLastUpdated();
+        }
+        
+        async function loadStats() {
+            try {
+                const response = await fetch('/api/admin/key_management/data');
+                const data = await response.json();
+                updateStats(data);
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+        
+        async function loadSessions() {
+            try {
+                const statusFilter = document.getElementById('statusFilter').value;
+                const sessionFilter = document.getElementById('sessionFilter').value;
+                const userFilter = document.getElementById('userFilter').value;
+                
+                const response = await fetch('/api/admin/key_management/data');
+                const data = await response.json();
+                
+                let filteredSessions = data.sessions;
+                
+                // Apply filters
+                if (statusFilter === 'active') {
+                    filteredSessions = filteredSessions.filter(s => s.key_established);
+                } else if (statusFilter === 'inactive') {
+                    filteredSessions = filteredSessions.filter(s => !s.key_established);
+                }
+                
+                if (sessionFilter) {
+                    filteredSessions = filteredSessions.filter(s => 
+                        s.session_id.toLowerCase().includes(sessionFilter.toLowerCase())
+                    );
+                }
+                
+                if (userFilter) {
+                    filteredSessions = filteredSessions.filter(s => 
+                        s.user1_port.includes(userFilter) || s.user2_port.includes(userFilter)
+                    );
+                }
+                
+                updateSessionsTable(filteredSessions);
+                document.getElementById('totalCount').textContent = data.sessions.length;
+                document.getElementById('filteredCount').textContent = `Showing ${filteredSessions.length} sessions`;
+                
+                // Highlight new sessions
+                if (filteredSessions.length > lastSessionCount) {
+                    highlightNewSessions();
+                }
+                lastSessionCount = filteredSessions.length;
+                
+            } catch (error) {
+                console.error('Error loading sessions:', error);
+            }
+        }
+        
+        function updateStats(data) {
+            const statsBar = document.getElementById('statsBar');
+            statsBar.innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-number">${data.statistics.total_users}</div>
+                    <div class="stat-label">Total Users</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${data.total_sessions}</div>
+                    <div class="stat-label">Total Sessions</div>
+                </div>
+                <div class="stat-card quantum">
+                    <div class="stat-number">${data.statistics.active_sessions}</div>
+                    <div class="stat-label">Active Sessions</div>
+                </div>
+                <div class="stat-card encrypted">
+                    <div class="stat-number">${data.statistics.successful_key_exchanges}</div>
+                    <div class="stat-label">Successful Exchanges</div>
+                </div>
+                <div class="stat-card normal">
+                    <div class="stat-number">${data.statistics.failed_key_exchanges}</div>
+                    <div class="stat-label">Failed Exchanges</div>
+                </div>
+            `;
+        }
+        
+        function updateSessionsTable(sessions) {
+            const table = document.getElementById('sessionsTable');
+            
+            if (sessions.length === 0) {
+                table.innerHTML = '<tr><td colspan="7" class="empty-state">No quantum sessions found with current filters</td></tr>';
+                return;
+            }
+            
+            // Show newest first
+            const reversedSessions = [...sessions].reverse();
+            
+            table.innerHTML = reversedSessions.map(session => `
+                <tr>
+                    <td><code>${session.session_id}</code></td>
+                    <td>
+                        <strong>User 1:</strong> ${session.user1_port}<br>
+                        <strong>User 2:</strong> ${session.user2_port}
+                    </td>
+                    <td>${formatStatusBadge(session)}</td>
+                    <td>${formatKeyContent(session.full_key)}</td>
+                    <td>${session.establishment_time ? new Date(session.establishment_time).toLocaleString() : 'Not established'}</td>
+                    <td>${new Date(session.last_used).toLocaleString()}</td>
+                    <td>
+                        ${session.key_established ? `
+                            <button class="action-btn btn-danger" onclick="deleteSession('${session.session_id}', '${session.user1_port}')">Delete</button>
+                            <button class="action-btn btn-warning" onclick="refreshSession('${session.session_id}', '${session.user2_port}')">Refresh</button>
+                        ` : '<span style="color: #7f8c8d;">No actions</span>'}
+                    </td>
+                </tr>
+            `).join('');
+        }
+        
+        function highlightNewSessions() {
+            const rows = document.querySelectorAll('#sessionsTable tr');
+            if (rows.length > 0) {
+                rows[0].classList.add('new-session');
+            }
+        }
+        
+        async function deleteSession(sessionId, targetUser) {
+            if (!confirm('⚠️ Are you sure you want to delete this quantum session? This will permanently remove the encryption key.')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/admin/key_management/delete_session', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ 
+                        session_id: sessionId,
+                        target_user: targetUser
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    alert('✅ Quantum session deleted successfully!');
+                    loadData(); // Reload data
+                } else {
+                    alert('❌ Error deleting session: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Error deleting session:', error);
+                alert('❌ Error deleting session');
+            }
+        }
+        
+        async function refreshSession(sessionId, targetPort) {
+            if (!confirm('🔄 Are you sure you want to refresh this quantum session? This will generate a new quantum key.')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/admin/key_management/refresh_session', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ 
+                        session_id: sessionId,
+                        target_port: targetPort
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    alert('✅ Quantum session refreshed successfully!');
+                    loadData(); // Reload data
+                } else {
+                    alert('❌ Error refreshing session: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Error refreshing session:', error);
+                alert('❌ Error refreshing session');
+            }
+        }
+        
+        function updateLastUpdated() {
+            const now = new Date();
+            document.getElementById('updateTime').textContent = now.toLocaleTimeString();
+        }
+        
+        // Event listeners
+        document.getElementById('statusFilter').addEventListener('change', loadData);
+        document.getElementById('sessionFilter').addEventListener('input', loadData);
+        document.getElementById('userFilter').addEventListener('input', loadData);
+        document.getElementById('autoRefresh').addEventListener('change', function() {
+            autoRefreshEnabled = this.checked;
+        });
+        
+        // Auto-refresh every 5 seconds if enabled
+        setInterval(() => {
+            if (autoRefreshEnabled) {
+                loadData();
+            }
+        }, 5000);
+        
+        // Initial load
+        loadData();
+    </script>
+</body>
+</html>

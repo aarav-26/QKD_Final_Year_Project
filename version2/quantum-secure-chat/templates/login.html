@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Talk'n'Go - Login</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-box">
+            <div class="app-header">
+                <h1>Talk'n'Go</h1>
+                <p>Enter your details to start chatting</p>
+            </div>
+            
+            {% if error %}
+            <div class="error-message">
+                {{ error }}
+            </div>
+            {% endif %}
+            
+            <form method="POST" class="login-form">
+                <div class="form-group">
+                    <label for="username">Username:</label>
+                    <input type="text" id="username" name="username" 
+                           placeholder="Enter your name" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="port">Port Number (Optional):</label>
+                    <input type="number" id="port" name="port" 
+                           placeholder="Auto-assign if empty"
+                           min="2000" max="3000">
+                    <small>Choose between 2000-3000 or leave empty for auto-assignment</small>
+                    <small>Available ports: {{ available_ports }}</small>
+                </div>
+                
+                <button type="submit" class="btn-login">Start Chatting</button>
+            </form>
+            
+            <div class="login-info">
+                <p><strong>Note:</strong> Each user runs on a different port</p>
+                <p>Example: User1: 2435, User2: 1234, User3: 7654</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantum Secure - Message Monitor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f8f9fa;
+            color: #2c3e50;
+        }
+        
+        .container {
+            max-width: 95%;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+        
+        .header .subtitle {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            text-align: center;
+            border-left: 4px solid #3498db;
+        }
+        
+        .stat-card.quantum {
+            border-left-color: #9b59b6;
+        }
+        
+        .stat-card.encrypted {
+            border-left-color: #27ae60;
+        }
+        
+        .stat-card.normal {
+            border-left-color: #e74c3c;
+        }
+        
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+        
+        .controls {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .filter-select, .refresh-btn, .logout-btn, .bulk-copy-btn {
+            padding: 10px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .filter-select:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+        
+        .refresh-btn {
+            background: #3498db;
+            color: white;
+            border-color: #3498db;
+        }
+        
+        .refresh-btn:hover {
+            background: #2980b9;
+        }
+        
+        .bulk-copy-btn {
+            background: #17a2b8;
+            color: white;
+            border-color: #17a2b8;
+        }
+        
+        .bulk-copy-btn:hover {
+            background: #138496;
+        }
+        
+        .logout-btn {
+            background: #e74c3c;
+            color: white;
+            border-color: #e74c3c;
+            margin-left: auto;
+        }
+        
+        .logout-btn:hover {
+            background: #c0392b;
+        }
+        
+        .messages-container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .section-header {
+            background: #34495e;
+            color: white;
+            padding: 15px 20px;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .table-container {
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th {
+            background: #ecf0f1;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid #bdc3c7;
+            position: sticky;
+            top: 0;
+        }
+        
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #ecf0f1;
+            vertical-align: top;
+        }
+        
+        tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .quantum-badge {
+            background: #9b59b6;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+        
+        .normal-badge {
+            background: #e74c3c;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+        
+        .message-container {
+            position: relative;
+            max-width: 500px;
+        }
+        
+        .message-content {
+            cursor: pointer;
+            position: relative;
+            padding-right: 30px;
+        }
+        
+        .message-preview {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .message-full {
+            display: none;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 5px;
+            border-left: 3px solid #3498db;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .message-expanded .message-preview {
+            display: none;
+        }
+        
+        .message-expanded .message-full {
+            display: block;
+        }
+        
+        .expand-icon {
+            color: #3498db;
+            margin-left: 5px;
+            font-weight: bold;
+        }
+        
+        .copy-btn {
+            position: absolute;
+            right: 5px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(52, 152, 219, 0.1);
+            border: 1px solid #3498db;
+            border-radius: 4px;
+            color: #3498db;
+            padding: 4px 6px;
+            cursor: pointer;
+            font-size: 0.7em;
+            transition: all 0.3s ease;
+            opacity: 0;
+        }
+        
+        .message-container:hover .copy-btn {
+            opacity: 1;
+        }
+        
+        .copy-btn:hover {
+            background: #3498db;
+            color: white;
+        }
+        
+        .copy-success {
+            background: #27ae60 !important;
+            border-color: #27ae60 !important;
+            color: white !important;
+        }
+        
+        .encrypted-content {
+            font-family: monospace;
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 8px;
+            border-radius: 5px;
+            word-break: break-all;
+            white-space: pre-wrap;
+            position: relative;
+            padding-right: 35px;
+        }
+        
+        .encrypted-copy-btn {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(236, 240, 241, 0.2);
+            border: none;
+            border-radius: 3px;
+            color: #ecf0f1;
+            padding: 4px 6px;
+            cursor: pointer;
+            font-size: 0.7em;
+            transition: all 0.3s ease;
+            opacity: 0;
+        }
+        
+        .encrypted-content:hover .encrypted-copy-btn {
+            opacity: 1;
+        }
+        
+        .encrypted-copy-btn:hover {
+            background: rgba(236, 240, 241, 0.3);
+            color: white;
+        }
+        
+        .last-updated {
+            text-align: center;
+            color: #7f8c8d;
+            margin-top: 20px;
+            font-size: 0.9em;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #7f8c8d;
+        }
+        
+        .auto-refresh-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+        
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .slider {
+            background-color: #2196F3;
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+        
+        .search-input {
+            padding: 8px 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            width: 200px;
+        }
+        
+        .new-message {
+            animation: highlight 2s ease-out;
+        }
+        
+        @keyframes highlight {
+            0% { background-color: #e8f5e8; }
+            100% { background-color: transparent; }
+        }
+        
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #27ae60;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 5px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 1000;
+            transform: translateX(150%);
+            transition: transform 0.3s ease;
+        }
+        
+        .toast.show {
+            transform: translateX(0);
+        }
+        
+        .toast.error {
+            background: #e74c3c;
+        }
+        
+        .bulk-actions {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 4px solid #17a2b8;
+        }
+        
+        .bulk-actions h4 {
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+        
+        .bulk-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔐 Quantum Secure Monitor</h1>
+            <div class="subtitle">Complete Message Monitoring System</div>
+        </div>
+        
+        <div class="stats-bar" id="statsBar">
+            <!-- Stats will be loaded dynamically -->
+        </div>
+
+        <!-- Bulk Actions -->
+        <div class="bulk-actions">
+            <h4>📋 Bulk Copy Operations</h4>
+            <div class="bulk-buttons">
+                <button class="bulk-copy-btn" onclick="copyAllMessages()">📄 Copy All Messages</button>
+                <button class="bulk-copy-btn" onclick="copyQuantumMessages()">🔐 Copy Quantum Messages Only</button>
+                <button class="bulk-copy-btn" onclick="copyNormalMessages()">📝 Copy Normal Messages Only</button>
+                <button class="bulk-copy-btn" onclick="exportToJSON()">📤 Export to JSON</button>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <select class="filter-select" id="typeFilter">
+                <option value="all">All Message Types</option>
+                <option value="text">Text Messages</option>
+                <option value="encrypted_text">Encrypted Text</option>
+                <option value="image">Images</option>
+                <option value="file">Files</option>
+            </select>
+            
+            <label>
+                <input type="checkbox" id="quantumOnly"> Show Quantum Encrypted Only
+            </label>
+            
+            <input type="text" class="search-input" id="sessionFilter" placeholder="Filter by Session ID">
+            <input type="text" class="search-input" id="userFilter" placeholder="Filter by User">
+            
+            <div class="auto-refresh-toggle">
+                <label>Auto Refresh:</label>
+                <label class="switch">
+                    <input type="checkbox" id="autoRefresh" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+            
+            <button class="refresh-btn" onclick="loadData()">🔄 Refresh</button>
+            <button class="logout-btn" onclick="logout()">🚪 Logout</button>
+        </div>
+        
+        <!-- SINGLE MESSAGES CONTAINER -->
+        <div class="messages-container">
+            <div class="section-header">
+                <span>📊 All Messages 
+                    <span id="totalCount">0</span> total messages
+                </span>
+                <span id="filteredCount">Showing 0 messages</span>
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>From</th>
+                            <th>To</th>
+                            <th>Type</th>
+                            <th>Content</th>
+                            <th>Security</th>
+                            <th>Session ID</th>
+                        </tr>
+                    </thead>
+                    <tbody id="messagesTable">
+                        <tr>
+                            <td colspan="7" class="empty-state">Loading messages...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="last-updated" id="lastUpdated">
+            Last updated: <span id="updateTime">Never</span>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
+
+    <script>
+        let autoRefreshEnabled = true;
+        let lastMessageCount = 0;
+        let allMessagesData = [];
+        
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast ${isError ? 'error' : ''} show`;
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+        
+        function formatMessageContent(message, isExpanded = false) {
+            let content = '';
+            
+            if (message.quantum_encrypted && message.message_type === 'encrypted_text') {
+                const shortContent = message.full_content.length > 80 ? 
+                    message.full_content.substring(0, 80) + '...' : message.full_content;
+                const fullContent = message.full_content;
+                
+                content = `
+                    <div class="encrypted-content" onclick="toggleEncryptedExpand(this)">
+                        <div class="message-preview">${shortContent}</div>
+                        <div class="message-full">${fullContent}</div>
+                        <span class="expand-icon">${isExpanded ? '▲' : '▼'}</span>
+                        <button class="encrypted-copy-btn" onclick="copyMessageToClipboard('${message.full_content.replace(/'/g, "\\'")}', this)" title="Copy encrypted content">
+                            📋
+                        </button>
+                    </div>
+                `;
+            } else if (message.message_type === 'text') {
+                const shortContent = message.full_content.length > 100 ? 
+                    message.full_content.substring(0, 100) + '...' : message.full_content;
+                const fullContent = message.full_content;
+                
+                content = `
+                    <div class="message-container">
+                        <div class="message-content ${isExpanded ? 'message-expanded' : ''}" onclick="toggleMessageExpand(this)">
+                            <div class="message-preview">${shortContent}</div>
+                            <div class="message-full">${fullContent}</div>
+                            <span class="expand-icon">${isExpanded ? '▲' : '▼'}</span>
+                        </div>
+                        <button class="copy-btn" onclick="copyMessageToClipboard('${message.full_content.replace(/'/g, "\\'")}', this)" title="Copy message">
+                            📋
+                        </button>
+                    </div>
+                `;
+            } else if (message.message_type === 'image') {
+                content = `🖼️ ${message.file_name || 'Image'}`;
+            } else if (message.message_type === 'file') {
+                content = `📎 ${message.file_name || 'File'} (${message.file_size || 'Unknown size'})`;
+            } else {
+                content = message.full_content || message.message_content;
+            }
+            
+            return content;
+        }
+        
+        function toggleMessageExpand(element) {
+            element.classList.toggle('message-expanded');
+            const icon = element.querySelector('.expand-icon');
+            icon.textContent = element.classList.contains('message-expanded') ? '▲' : '▼';
+        }
+        
+        function toggleEncryptedExpand(element) {
+            const preview = element.querySelector('.message-preview');
+            const full = element.querySelector('.message-full');
+            const icon = element.querySelector('.expand-icon');
+            
+            if (preview.style.display === 'none') {
+                preview.style.display = 'block';
+                full.style.display = 'none';
+                icon.textContent = '▼';
+            } else {
+                preview.style.display = 'none';
+                full.style.display = 'block';
+                icon.textContent = '▲';
+            }
+        }
+        
+        async function copyMessageToClipboard(messageContent, button) {
+            try {
+                await navigator.clipboard.writeText(messageContent);
+                
+                // Visual feedback
+                const originalText = button.textContent;
+                button.textContent = '✅';
+                button.classList.add('copy-success');
+                showToast('✅ Message copied to clipboard!');
+                
+                // Reset button after 2 seconds
+                setTimeout(() => {
+                    button.textContent = originalText;
+                    button.classList.remove('copy-success');
+                }, 2000);
+                
+            } catch (err) {
+                console.error('Failed to copy message:', err);
+                showToast('❌ Failed to copy message', true);
+            }
+        }
+        
+        async function copyAllMessages() {
+            if (allMessagesData.length === 0) {
+                showToast('❌ No messages found to copy', true);
+                return;
+            }
+            
+            const messagesText = allMessagesData.map(message => 
+                `[${message.timestamp}] ${message.from_user} → ${message.to_user}\nType: ${message.message_type}\nSecurity: ${message.quantum_encrypted ? 'QUANTUM' : 'NORMAL'}\nContent: ${message.full_content}\nSession: ${message.session_id}\n${'-'.repeat(50)}`
+            ).join('\n\n');
+            
+            try {
+                await navigator.clipboard.writeText(messagesText);
+                showToast(`✅ Copied ${allMessagesData.length} messages to clipboard!`);
+            } catch (err) {
+                console.error('Failed to copy all messages:', err);
+                showToast('❌ Failed to copy messages', true);
+            }
+        }
+        
+        async function copyQuantumMessages() {
+            const quantumMessages = allMessagesData.filter(message => message.quantum_encrypted);
+            
+            if (quantumMessages.length === 0) {
+                showToast('❌ No quantum encrypted messages found', true);
+                return;
+            }
+            
+            const messagesText = quantumMessages.map(message => 
+                `[${message.timestamp}] ${message.from_user} → ${message.to_user}\nType: ${message.message_type}\nSecurity: QUANTUM 🔐\nEncrypted Content: ${message.full_content}\nSession: ${message.session_id}\n${'-'.repeat(50)}`
+            ).join('\n\n');
+            
+            try {
+                await navigator.clipboard.writeText(messagesText);
+                showToast(`✅ Copied ${quantumMessages.length} quantum messages to clipboard!`);
+            } catch (err) {
+                console.error('Failed to copy quantum messages:', err);
+                showToast('❌ Failed to copy quantum messages', true);
+            }
+        }
+        
+        async function copyNormalMessages() {
+            const normalMessages = allMessagesData.filter(message => !message.quantum_encrypted);
+            
+            if (normalMessages.length === 0) {
+                showToast('❌ No normal messages found', true);
+                return;
+            }
+            
+            const messagesText = normalMessages.map(message => 
+                `[${message.timestamp}] ${message.from_user} → ${message.to_user}\nType: ${message.message_type}\nSecurity: NORMAL\nContent: ${message.full_content}\nSession: ${message.session_id}\n${'-'.repeat(50)}`
+            ).join('\n\n');
+            
+            try {
+                await navigator.clipboard.writeText(messagesText);
+                showToast(`✅ Copied ${normalMessages.length} normal messages to clipboard!`);
+            } catch (err) {
+                console.error('Failed to copy normal messages:', err);
+                showToast('❌ Failed to copy normal messages', true);
+            }
+        }
+        
+        function exportToJSON() {
+            if (allMessagesData.length === 0) {
+                showToast('❌ No messages found to export', true);
+                return;
+            }
+            
+            const dataStr = JSON.stringify(allMessagesData, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `quantum_messages_${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            
+            showToast(`📤 Exported ${allMessagesData.length} messages to JSON file`);
+        }
+        
+        function formatSecurityBadge(message) {
+            if (message.quantum_encrypted) {
+                return '<span class="quantum-badge">QUANTUM 🔐</span>';
+            } else {
+                return '<span class="normal-badge">NORMAL</span>';
+            }
+        }
+        
+        async function loadData() {
+            await loadStats();
+            await loadMessages();
+            updateLastUpdated();
+        }
+        
+        async function loadStats() {
+            try {
+                const response = await fetch('/api/monitoring/stats');
+                const stats = await response.json();
+                updateStats(stats);
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+        
+        async function loadMessages() {
+            try {
+                const typeFilter = document.getElementById('typeFilter').value;
+                const quantumOnly = document.getElementById('quantumOnly').checked;
+                const sessionFilter = document.getElementById('sessionFilter').value;
+                const userFilter = document.getElementById('userFilter').value;
+                
+                let url = `/api/monitoring/messages?type=${typeFilter}&quantum_only=${quantumOnly}`;
+                if (sessionFilter) url += `&session_id=${sessionFilter}`;
+                if (userFilter) url += `&user=${userFilter}`;
+                
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                // Store all messages for bulk operations
+                allMessagesData = data.messages;
+                
+                updateMessagesTable(data.messages);
+                document.getElementById('totalCount').textContent = data.total_messages;
+                document.getElementById('filteredCount').textContent = `Showing ${data.filtered_count} messages`;
+                
+                // Highlight new messages
+                if (data.filtered_count > lastMessageCount) {
+                    highlightNewMessages();
+                }
+                lastMessageCount = data.filtered_count;
+                
+            } catch (error) {
+                console.error('Error loading messages:', error);
+            }
+        }
+        
+        function updateStats(stats) {
+            const statsBar = document.getElementById('statsBar');
+            statsBar.innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-number">${stats.total_users}</div>
+                    <div class="stat-label">Total Users</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${stats.online_users}</div>
+                    <div class="stat-label">Online Users</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${stats.total_messages}</div>
+                    <div class="stat-label">Total Messages</div>
+                </div>
+                <div class="stat-card quantum">
+                    <div class="stat-number">${stats.quantum_sessions}</div>
+                    <div class="stat-label">Quantum Sessions</div>
+                </div>
+                <div class="stat-card encrypted">
+                    <div class="stat-number">${stats.quantum_messages}</div>
+                    <div class="stat-label">Quantum Encrypted</div>
+                </div>
+                <div class="stat-card normal">
+                    <div class="stat-number">${stats.normal_messages}</div>
+                    <div class="stat-label">Normal Messages</div>
+                </div>
+            `;
+        }
+        
+        function updateMessagesTable(messages) {
+            const table = document.getElementById('messagesTable');
+            
+            if (messages.length === 0) {
+                table.innerHTML = '<tr><td colspan="7" class="empty-state">No messages found with current filters</td></tr>';
+                return;
+            }
+            
+            // Show newest first (reverse chronological order)
+            const reversedMessages = [...messages].reverse();
+            
+            table.innerHTML = reversedMessages.map(message => `
+                <tr>
+                    <td>${message.timestamp}</td>
+                    <td><strong>${message.from_user}</strong><br><small>Port: ${message.from_port}</small></td>
+                    <td><strong>${message.to_user}</strong><br><small>Port: ${message.to_port}</small></td>
+                    <td>${message.message_type.toUpperCase()}</td>
+                    <td>${formatMessageContent(message)}</td>
+                    <td>${formatSecurityBadge(message)}</td>
+                    <td><small>${message.session_id}</small></td>
+                </tr>
+            `).join('');
+        }
+        
+        function highlightNewMessages() {
+            const rows = document.querySelectorAll('#messagesTable tr');
+            if (rows.length > 0) {
+                rows[0].classList.add('new-message');
+            }
+        }
+        
+        function updateLastUpdated() {
+            const now = new Date();
+            document.getElementById('updateTime').textContent = now.toLocaleTimeString();
+        }
+        
+        function logout() {
+            fetch('/admin/logout')
+                .then(() => {
+                    window.location.href = '/admin/login';
+                });
+        }
+        
+        // Event listeners
+        document.getElementById('typeFilter').addEventListener('change', loadData);
+        document.getElementById('quantumOnly').addEventListener('change', loadData);
+        document.getElementById('sessionFilter').addEventListener('input', loadData);
+        document.getElementById('userFilter').addEventListener('input', loadData);
+        document.getElementById('autoRefresh').addEventListener('change', function() {
+            autoRefreshEnabled = this.checked;
+        });
+        
+        // Auto-refresh every 3 seconds if enabled
+        setInterval(() => {
+            if (autoRefreshEnabled) {
+                loadData();
+            }
+        }, 3000);
+        
+        // Initial load
+        loadData();
+    </script>
+</body>
+</html>

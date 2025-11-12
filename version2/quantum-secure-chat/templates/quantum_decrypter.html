@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantum Message Decrypter - Professional Tool</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 50%, #16213e 100%);
+            min-height: 100vh;
+            color: #ffffff;
+            overflow-x: hidden;
+        }
+        
+        .app-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Header Styles */
+        .header {
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1.5rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo-section h1 {
+            font-size: 1.8rem;
+            font-weight: 300;
+            background: linear-gradient(135deg, #00b4db, #0083b0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.25rem;
+        }
+        
+        .logo-section .subtitle {
+            font-size: 0.9rem;
+            color: #8892b0;
+            font-weight: 300;
+        }
+        
+        .nav-controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+        }
+        
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            height: calc(100vh - 120px);
+        }
+        
+        @media (max-width: 1024px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+        }
+        
+        /* Left Panel - Input */
+        .input-panel {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        
+        .panel-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #ffffff;
+        }
+        
+        .panel-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        /* Right Panel - Output */
+        .output-panel {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Form Elements */
+        .form-section {
+            margin-bottom: 2rem;
+        }
+        
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #64ffda;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-label {
+            display: block;
+            font-weight: 500;
+            color: #ccd6f6;
+            margin-bottom: 0.75rem;
+            font-size: 0.95rem;
+        }
+        
+        .form-input, .form-textarea {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 1rem 1.25rem;
+            color: #ffffff;
+            font-family: 'Fira Code', 'Courier New', monospace;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            resize: vertical;
+        }
+        
+        .form-textarea {
+            min-height: 120px;
+            line-height: 1.5;
+        }
+        
+        .form-input:focus, .form-textarea:focus {
+            outline: none;
+            border-color: #64ffda;
+            background: rgba(255, 255, 255, 0.12);
+            box-shadow: 0 0 0 3px rgba(100, 255, 218, 0.1);
+        }
+        
+        .form-input::placeholder, .form-textarea::placeholder {
+            color: #8892b0;
+        }
+        
+        /* Buttons */
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #00b4db, #0083b0);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 180, 219, 0.3);
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ccd6f6;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-1px);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #00d2ff, #3a7bd5);
+            color: white;
+        }
+        
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 210, 255, 0.3);
+        }
+        
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: auto;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Result Display */
+        .result-display {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .result-content {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1.5rem;
+            font-family: 'Segoe UI', sans-serif;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-y: auto;
+            min-height: 200px;
+            color: #e6f1ff;
+            line-height: 1.6;
+        }
+        
+        .result-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 1.5rem;
+        }
+        
+        /* Status Indicators */
+        .status-indicator {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .status-waiting {
+            background: rgba(255, 193, 7, 0.2);
+            color: #ffc107;
+            border: 1px solid rgba(255, 193, 7, 0.3);
+        }
+        
+        .status-success {
+            background: rgba(40, 167, 69, 0.2);
+            color: #28a745;
+            border: 1px solid rgba(40, 167, 69, 0.3);
+        }
+        
+        .status-error {
+            background: rgba(220, 53, 69, 0.2);
+            color: #dc3545;
+            border: 1px solid rgba(220, 53, 69, 0.3);
+        }
+        
+        /* Info Sections */
+        .info-section {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .info-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #64ffda;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .info-content {
+            color: #8892b0;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+        
+        .info-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .info-list li {
+            margin-bottom: 0.5rem;
+            padding-left: 1rem;
+            position: relative;
+        }
+        
+        .info-list li:before {
+            content: "•";
+            color: #64ffda;
+            position: absolute;
+            left: 0;
+        }
+        
+        /* Toast Notifications */
+        .toast {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            background: rgba(255, 255, 255, 0.95);
+            color: #1a1a2e;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            transform: translateX(150%);
+            transition: transform 0.3s ease;
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .toast.show {
+            transform: translateX(0);
+        }
+        
+        .toast.error {
+            background: rgba(220, 53, 69, 0.95);
+            color: white;
+        }
+        
+        /* Utility Classes */
+        .text-muted {
+            color: #8892b0;
+            font-size: 0.85rem;
+        }
+        
+        .monospace {
+            font-family: 'Fira Code', 'Courier New', monospace;
+        }
+        
+        .scrollable {
+            overflow-y: auto;
+        }
+        
+        .scrollable::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .scrollable::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 3px;
+        }
+        
+        .scrollable::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+        }
+        
+        .scrollable::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+            
+            .main-content {
+                padding: 1rem;
+            }
+            
+            .content-grid {
+                gap: 1rem;
+            }
+            
+            .input-panel, .output-panel {
+                padding: 1.5rem;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            .nav-controls {
+                justify-content: center;
+            }
+        }
+        
+        /* Animation */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        /* Crypto Badge */
+        .crypto-badge {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="logo-section">
+                    <h1>🔓 Quantum Message Decrypter</h1>
+                    <div class="subtitle">Professional Cryptographic Tool - AES-256 & Fernet Support</div>
+                </div>
+                <div class="nav-controls">
+                    <div class="crypto-badge">AES-256 Secure</div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="content-grid">
+                <!-- Left Panel - Input -->
+                <section class="input-panel fade-in">
+                    <div class="panel-header">
+                        <h2 class="panel-title">📥 Input Parameters</h2>
+                        <div class="panel-actions">
+                            <button class="btn btn-secondary" onclick="loadExample()">
+                                <span>📋</span> Load Example
+                            </button>
+                            <button class="btn btn-secondary" onclick="clearAll()">
+                                <span>🗑️</span> Clear All
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Instructions -->
+                    <div class="info-section">
+                        <h3 class="info-title">💡 How to Use</h3>
+                        <ul class="info-list">
+                            <li>Paste Base64 encrypted message</li>
+                            <li>Enter 64-character hex quantum key</li>
+                            <li>Click decrypt to reveal original content</li>
+                            <li>Copy result for further analysis</li>
+                        </ul>
+                    </div>
+
+                    <!-- Encrypted Message Input -->
+                    <div class="form-section">
+                        <h3 class="section-title">
+                            <span>🔐</span> Encrypted Message
+                        </h3>
+                        <div class="form-group">
+                            <label class="form-label">Base64 Encrypted Content</label>
+                            <textarea 
+                                id="encryptedMessage" 
+                                class="form-textarea scrollable"
+                                placeholder="Paste your Fernet or AES encrypted message in Base64 format..."
+                                rows="6"
+                            ></textarea>
+                            <div class="text-muted">Supports Fernet (AES-128-CBC) and custom AES encryption</div>
+                        </div>
+                    </div>
+
+                    <!-- Quantum Key Input -->
+                    <div class="form-section">
+                        <h3 class="section-title">
+                            <span>🔑</span> Quantum Key
+                        </h3>
+                        <div class="form-group">
+                            <label class="form-label">Hexadecimal Encryption Key</label>
+                            <input 
+                                type="text" 
+                                id="quantumKey" 
+                                class="form-input monospace"
+                                placeholder="Enter 64-character hexadecimal key (0-9, A-F)..."
+                                maxlength="64"
+                            >
+                            <div class="text-muted">64 hex characters required for proper key derivation</div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" onclick="decryptMessage()">
+                            <span>🔓</span> Decrypt Message
+                        </button>
+                        <button class="btn btn-secondary" onclick="validateInputs()">
+                            <span>⚡</span> Validate Inputs
+                        </button>
+                    </div>
+                </section>
+
+                <!-- Right Panel - Output -->
+                <section class="output-panel fade-in">
+                    <div class="panel-header">
+                        <h2 class="panel-title">📤 Decryption Results</h2>
+                        <div id="statusIndicator" class="status-indicator status-waiting">
+                            Ready
+                        </div>
+                    </div>
+
+                    <!-- Algorithm Info -->
+                    <div class="info-section">
+                        <h3 class="info-title">🔧 Cryptographic Details</h3>
+                        <div class="info-content">
+                            <strong>Current Algorithm:</strong> Fernet (AES-128-CBC + HMAC-SHA256)<br>
+                            <strong>Key Derivation:</strong> PBKDF2-HMAC-SHA256<br>
+                            <strong>Encoding:</strong> Base64 URL Safe
+                        </div>
+                    </div>
+
+                    <!-- Result Display -->
+                    <div class="result-display">
+                        <div class="result-header">
+                            <h3 class="section-title">
+                                <span>📄</span> Decrypted Content
+                            </h3>
+                        </div>
+                        
+                        <div id="resultContent" class="result-content scrollable">
+                            Decrypted message will appear here...
+                            <br><br>
+                            <div class="text-muted">
+                                • Successfully decrypted content will be shown in clear text<br>
+                                • Errors will display detailed failure information<br>
+                                • Use copy button to export results
+                            </div>
+                        </div>
+
+                        <div class="result-actions">
+                            <button class="btn btn-success" onclick="copyResult()" id="copyBtn">
+                                <span>📋</span> Copy Result
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Debug Information -->
+                    <div class="info-section">
+                        <h3 class="info-title" onclick="toggleDebug()" style="cursor: pointer;">
+                            <span>🔍</span> Technical Details
+                        </h3>
+                        <div id="debugContent" class="info-content">
+                            <div id="debugInfo">
+                                No decryption operation performed yet.
+                                <br><br>
+                                <strong>Expected formats:</strong><br>
+                                • Encrypted: Base64 string<br>
+                                • Key: 64 hex characters<br>
+                                • Output: UTF-8 text
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
+
+    <script>
+        // Toast notification system
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast ${isError ? 'error' : ''} show`;
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 4000);
+        }
+
+        // Toggle debug information
+        function toggleDebug() {
+            const debugContent = document.getElementById('debugContent');
+            const isHidden = debugContent.style.display === 'none';
+            debugContent.style.display = isHidden ? 'block' : 'none';
+        }
+
+        // Load example data
+        function loadExample() {
+            document.getElementById('encryptedMessage').value = 
+                'gAAAAABf9uYz6QK9cX6J4p7vR8V2h3mK8lL5nBqPwE3dCtAeFgYrS2xM1oN7bW8pQvY6iEaXyT9kL3sF5nGqJw==';
+            
+            document.getElementById('quantumKey').value = 
+                '9f4d8e7a2b6c5d3e1f0a9b8c7d6e5f4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d8e7f6a5b4c3d2e1f0';
+            
+            showToast('📝 Example cryptographic data loaded successfully!');
+            updateStatus('Ready', 'waiting');
+        }
+
+        // Clear all inputs
+        function clearAll() {
+            document.getElementById('encryptedMessage').value = '';
+            document.getElementById('quantumKey').value = '';
+            document.getElementById('resultContent').textContent = 'Decrypted message will appear here...\n\n• Successfully decrypted content will be shown in clear text\n• Errors will display detailed failure information\n• Use copy button to export results';
+            document.getElementById('debugInfo').innerHTML = 'No decryption operation performed yet.<br><br><strong>Expected formats:</strong><br>• Encrypted: Base64 string<br>• Key: 64 hex characters<br>• Output: UTF-8 text';
+            
+            updateStatus('Ready', 'waiting');
+            showToast('🗑️ All fields cleared successfully!');
+        }
+
+        // Validate inputs before decryption
+        function validateInputs() {
+            const encryptedMessage = document.getElementById('encryptedMessage').value.trim();
+            const quantumKeyHex = document.getElementById('quantumKey').value.trim();
+            const hexRegex = /^[0-9A-Fa-f]{64}$/;
+
+            if (!encryptedMessage) {
+                showToast('❌ Please enter an encrypted message', true);
+                return false;
+            }
+
+            if (!quantumKeyHex) {
+                showToast('❌ Please enter a quantum key', true);
+                return false;
+            }
+
+            if (!hexRegex.test(quantumKeyHex)) {
+                showToast('❌ Invalid quantum key format', true);
+                return false;
+            }
+
+            showToast('✅ Input validation successful! Ready to decrypt.');
+            return true;
+        }
+
+        // Update status indicator
+        function updateStatus(text, type) {
+            const indicator = document.getElementById('statusIndicator');
+            indicator.textContent = text;
+            indicator.className = `status-indicator status-${type}`;
+        }
+
+        // Main decryption function
+        async function decryptMessage() {
+            if (!validateInputs()) return;
+
+            const encryptedMessage = document.getElementById('encryptedMessage').value.trim();
+            const quantumKeyHex = document.getElementById('quantumKey').value.trim();
+
+            updateStatus('Decrypting...', 'waiting');
+
+            try {
+                const startTime = performance.now();
+                
+                const response = await fetch('/api/quantum/decrypt_message', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        encrypted_message: encryptedMessage,
+                        quantum_key: quantumKeyHex
+                    })
+                });
+
+                const result = await response.json();
+                const endTime = performance.now();
+                const processingTime = (endTime - startTime).toFixed(2);
+
+                if (result.status === 'success') {
+                    document.getElementById('resultContent').textContent = result.decrypted_message;
+                    updateStatus('Success', 'success');
+                    
+                    document.getElementById('debugInfo').innerHTML = `
+                        <strong>Decryption Successful</strong><br>
+                        • Processing Time: ${processingTime}ms<br>
+                        • Key Length: ${quantumKeyHex.length} characters<br>
+                        • Message Length: ${encryptedMessage.length} characters<br>
+                        • Algorithm: Fernet (AES-128-CBC)<br>
+                        • Timestamp: ${new Date().toLocaleString()}<br>
+                        <br>
+                        <strong>Technical Details:</strong><br>
+                        • Key Derivation: PBKDF2-HMAC-SHA256<br>
+                        • Encryption: AES-128-CBC<br>
+                        • Authentication: HMAC-SHA256<br>
+                        • Encoding: Base64 URL Safe
+                    `;
+                    
+                    showToast(`✅ Message decrypted successfully in ${processingTime}ms!`);
+                } else {
+                    throw new Error(result.message || 'Decryption failed');
+                }
+                
+            } catch (error) {
+                console.error('Decryption error:', error);
+                document.getElementById('resultContent').textContent = `❌ Decryption Failed\n\nError: ${error.message}\n\nPlease check your inputs and try again.`;
+                updateStatus('Failed', 'error');
+                
+                document.getElementById('debugInfo').innerHTML = `
+                    <strong>Decryption Error</strong><br>
+                    • Error: ${error.message}<br>
+                    • Key Length: ${quantumKeyHex.length} characters<br>
+                    • Message Length: ${encryptedMessage.length} characters<br>
+                    • Timestamp: ${new Date().toLocaleString()}<br>
+                    <br>
+                    <strong>Troubleshooting:</strong><br>
+                    • Verify key is correct 64-character hex<br>
+                    • Ensure message is proper Base64<br>
+                    • Check that key matches encryption key<br>
+                    • Confirm algorithm compatibility
+                `;
+                
+                showToast('❌ Decryption failed: ' + error.message, true);
+            }
+        }
+
+        // Copy result to clipboard
+        async function copyResult() {
+            const resultContent = document.getElementById('resultContent').textContent;
+            
+            if (!resultContent || resultContent.includes('will appear here') || resultContent.includes('❌')) {
+                showToast('❌ No valid result to copy', true);
+                return;
+            }
+
+            try {
+                await navigator.clipboard.writeText(resultContent);
+                
+                const copyBtn = document.getElementById('copyBtn');
+                const originalText = copyBtn.innerHTML;
+                copyBtn.innerHTML = '<span>✅</span> Copied!';
+                copyBtn.style.background = 'linear-gradient(135deg, #28a745, #20c997)';
+                
+                showToast('📋 Decrypted content copied to clipboard!');
+                
+                setTimeout(() => {
+                    copyBtn.innerHTML = originalText;
+                    copyBtn.style.background = '';
+                }, 2000);
+                
+            } catch (err) {
+                console.error('Failed to copy result:', err);
+                showToast('❌ Failed to copy result', true);
+            }
+        }
+
+        // Utility functions
+        function hexToBytes(hex) {
+            const bytes = new Uint8Array(hex.length / 2);
+            for (let i = 0; i < hex.length; i += 2) {
+                bytes[i / 2] = parseInt(hex.substr(i, 2), 16);
+            }
+            return bytes;
+        }
+
+        function bytesToHex(bytes) {
+            return Array.from(bytes)
+                .map(b => b.toString(16).padStart(2, '0'))
+                .join('');
+        }
+
+        // Auto-format key input
+        document.getElementById('quantumKey').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/[^0-9A-Fa-f]/g, '').toUpperCase();
+            if (value.length > 64) {
+                value = value.substring(0, 64);
+            }
+            e.target.value = value;
+        });
+
+        // Enter key to decrypt
+        document.getElementById('quantumKey').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                decryptMessage();
+            }
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            showToast('🔓 Quantum Decrypter Ready - Load example or enter your data');
+        });
+    </script>
+</body>
+</html>
